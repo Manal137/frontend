@@ -18,7 +18,7 @@ const AdminPage = () => {
 
   const fetchAllUsers = async () => {
     try {
-      const res = await fetch(`${API_BASE}}/api/auth/admin/all-users`);
+      const res = await fetch(`${API_BASE}/api/auth/admin/all-users`);
       const data = await res.json();
       setUsers(data);
       const initialStatuses = {};
