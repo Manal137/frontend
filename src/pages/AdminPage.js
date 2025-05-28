@@ -18,7 +18,7 @@ const AdminPage = () => {
 
   const fetchAllUsers = async () => {
     try {
-      const res = await fetch(`${API_BASE}/admin/all-users`);
+      const res = await fetch(`${API_BASE}}/api/auth/admin/all-users`);
       const data = await res.json();
       setUsers(data);
       const initialStatuses = {};
@@ -45,7 +45,7 @@ const AdminPage = () => {
     const currentStatus = userStatuses[userId];
     const isApproved = currentStatus === 'approved';
 
-    const url = `${API_BASE}/admin/${isApproved ? 'disapprove' : 'approve'}`;
+    const url = `${API_BASE}/api/auth/admin/${isApproved ? 'disapprove' : 'approve'}`;
 
     try {
       const res = await fetch(url, {
@@ -74,7 +74,7 @@ const AdminPage = () => {
     if (!confirmDelete) return;
 
     try {
-      const res = await fetch(`${API_BASE}/admin/delete-user/${userId}`, {
+      const res = await fetch(`${API_BASE}/api/auth/admin/delete-user/${userId}`, {
         method: 'DELETE',
       });
 
