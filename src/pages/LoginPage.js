@@ -116,7 +116,6 @@
 
 
 
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -126,11 +125,11 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
 
-  // Updated base URL (no trailing slash or /api/auth)
   const API_BASE = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setError(null); // clear previous errors
 
     try {
       const response = await fetch(`${API_BASE}/api/auth/login`, {
@@ -144,11 +143,12 @@ const LoginPage = () => {
       if (response.ok) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
-        navigate('/landing'); // redirect to user landing
+        navigate('/landing');
       } else {
         setError(data.error || 'Login failed. Please try again.');
       }
     } catch (err) {
+      console.error('Login error:', err);
       setError('Server error. Please try again later.');
     }
   };
@@ -179,6 +179,7 @@ const LoginPage = () => {
         <form onSubmit={handleLogin}>
           <input
             type="email"
+            autoComplete="email"
             placeholder="Email"
             className="w-full mb-4 px-4 py-2 rounded focus:outline-none"
             style={{
@@ -192,6 +193,7 @@ const LoginPage = () => {
           />
           <input
             type="password"
+            autoComplete="current-password"
             placeholder="Password"
             className="w-full mb-6 px-4 py-2 rounded focus:outline-none"
             style={{
