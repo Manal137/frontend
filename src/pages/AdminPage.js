@@ -1,6 +1,7 @@
-
 // import React, { useEffect, useState } from 'react';
 // import { useNavigate } from 'react-router-dom';
+
+// const API_BASE = process.env.REACT_APP_API_BASE_URL;
 
 // const AdminPage = () => {
 //   const [users, setUsers] = useState([]);
@@ -8,15 +9,26 @@
 //   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
 //   const navigate = useNavigate();
 
-//   const API_BASE = process.env.REACT_APP_API_BASE_URL;
-
 //   useEffect(() => {
 //     fetchAllUsers();
 //   }, []);
 
 //   const fetchAllUsers = async () => {
+//     const token = localStorage.getItem('adminToken');
 //     try {
-//       const res = await fetch(`${API_BASE}/admin/all-users`);
+//       const res = await fetch(`${API_BASE}/admin/all-users`, {
+//         headers: {
+//           'Authorization': `Bearer ${token}`,
+//           'Content-Type': 'application/json',
+//         },
+//         credentials: 'include',
+//       });
+
+//       if (!res.ok) {
+//         const error = await res.json();
+//         throw new Error(error.error || 'Failed to fetch users');
+//       }
+
 //       const data = await res.json();
 //       setUsers(data);
 //       const initialStatuses = {};
@@ -40,6 +52,7 @@
 //   };
 
 //   const handleToggleApproval = async (userId) => {
+//     const token = localStorage.getItem('adminToken');
 //     const currentStatus = userStatuses[userId];
 //     const isApproved = currentStatus === 'approved';
 
@@ -48,7 +61,10 @@
 //     try {
 //       const res = await fetch(url, {
 //         method: 'POST',
-//         headers: { 'Content-Type': 'application/json' },
+//         headers: {
+//           'Authorization': `Bearer ${token}`,
+//           'Content-Type': 'application/json',
+//         },
 //         body: JSON.stringify({ userId }),
 //       });
 
@@ -68,12 +84,17 @@
 //   };
 
 //   const handleDelete = async (userId) => {
+//     const token = localStorage.getItem('adminToken');
 //     const confirmDelete = window.confirm('Are you sure you want to delete this user?');
 //     if (!confirmDelete) return;
 
 //     try {
 //       const res = await fetch(`${API_BASE}/admin/delete-user/${userId}`, {
 //         method: 'DELETE',
+//         headers: {
+//           'Authorization': `Bearer ${token}`,
+//           'Content-Type': 'application/json',
+//         },
 //       });
 
 //       if (!res.ok) {
@@ -201,10 +222,9 @@
 
 
 
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-const API_BASE = process.env.REACT_APP_API_BASE_URL;
 
 const AdminPage = () => {
   const [users, setUsers] = useState([]);
@@ -212,35 +232,38 @@ const AdminPage = () => {
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const navigate = useNavigate();
 
+  // Ensure your .env has REACT_APP_API_BASE_URL without trailing slash:
+  // REACT_APP_API_BASE_URL=https://backend-production-06d3.up.railway.app
+  const API_BASE = process.env.REACT_APP_API_BASE_URL;
+
   useEffect(() => {
     fetchAllUsers();
   }, []);
 
   const fetchAllUsers = async () => {
-    const token = localStorage.getItem('adminToken');
     try {
-      const res = await fetch(`${API_BASE}/admin/all-users`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-      });
-
+      const res = await fetch(`${API_BASE}/api/auth/admin/all-users`);
       if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.error || 'Failed to fetch users');
+        throw new Error('Failed to fetch users');
       }
-
       const data = await res.json();
-      setUsers(data);
+
+      // If your backend sends { users: [...] } instead of plain array, fix this here:
+      const usersArray = Array.isArray(data) ? data : data.users || [];
+      
+      setUsers(usersArray);
+
+      // Prepare status map:
       const initialStatuses = {};
-      data.forEach((user) => {
+      usersArray.forEach((user) => {
         initialStatuses[user.id] = user.is_approved ? 'approved' : 'pending';
       });
       setUserStatuses(initialStatuses);
+
     } catch (err) {
       console.error('Error fetching users:', err);
+      setUsers([]);  // fallback empty list
+      alert('Error loading users: ' + err.message);
     }
   };
 
@@ -255,19 +278,15 @@ const AdminPage = () => {
   };
 
   const handleToggleApproval = async (userId) => {
-    const token = localStorage.getItem('adminToken');
     const currentStatus = userStatuses[userId];
     const isApproved = currentStatus === 'approved';
 
-    const url = `${API_BASE}/admin/${isApproved ? 'disapprove' : 'approve'}`;
+    const url = `${API_BASE}/api/auth/admin/${isApproved ? 'disapprove' : 'approve'}`;
 
     try {
       const res = await fetch(url, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId }),
       });
 
@@ -287,17 +306,12 @@ const AdminPage = () => {
   };
 
   const handleDelete = async (userId) => {
-    const token = localStorage.getItem('adminToken');
     const confirmDelete = window.confirm('Are you sure you want to delete this user?');
     if (!confirmDelete) return;
 
     try {
-      const res = await fetch(`${API_BASE}/admin/delete-user/${userId}`, {
+      const res = await fetch(`${API_BASE}/api/auth/admin/delete-user/${userId}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
       });
 
       if (!res.ok) {
@@ -334,37 +348,45 @@ const AdminPage = () => {
   };
 
   return (
-    <div className="max-w-5xl mx-auto p-8 rounded-lg"
-         style={{
-           backgroundColor: '#f5f0e6',
-           boxShadow: '0 8px 24px rgba(139, 94, 60, 0.3)',
-           minHeight: '90vh',
-         }}>
+    <div
+      className="max-w-5xl mx-auto p-8 rounded-lg"
+      style={{
+        backgroundColor: '#f5f0e6',
+        boxShadow: '0 8px 24px rgba(139, 94, 60, 0.3)',
+        minHeight: '90vh',
+      }}
+    >
       <div className="flex justify-between items-center mb-7 relative">
-        <h2 className="text-4xl font-bold text-center border-b pb-4"
-            style={{ color: '#5b3a29', borderColor: '#a97458' }}>
+        <h2
+          className="text-4xl font-bold text-center border-b pb-4"
+          style={{ color: '#5b3a29', borderColor: '#a97458' }}
+        >
           Admin Portal
         </h2>
         <div style={{ position: 'relative' }}>
-          <button onClick={handleLogout}
-                  className="bg-[#8b5e3c] hover:bg-[#a97458] text-white px-4 py-2 rounded-md transition font-semibold">
+          <button
+            onClick={handleLogout}
+            className="bg-[#8b5e3c] hover:bg-[#a97458] text-white px-4 py-2 rounded-md transition font-semibold"
+          >
             Logout
           </button>
           {showLogoutDialog && (
-            <div style={{
-              position: 'absolute',
-              top: 'calc(100% + 4px)',
-              right: 0,
-              backgroundColor: '#ffffff',
-              padding: '4px 8px',
-              border: '1px solid #ddd',
-              borderRadius: '2px',
-              fontSize: '0.75rem',
-              color: '#333',
-              zIndex: 1000,
-              minWidth: '100px',
-              boxShadow: 'none',
-            }}>
+            <div
+              style={{
+                position: 'absolute',
+                top: 'calc(100% + 4px)',
+                right: 0,
+                backgroundColor: '#ffffff',
+                padding: '4px 8px',
+                border: '1px solid #ddd',
+                borderRadius: '2px',
+                fontSize: '0.75rem',
+                color: '#333',
+                zIndex: 1000,
+                minWidth: '100px',
+                boxShadow: 'none',
+              }}
+            >
               Logged out successfully! Redirecting...
             </div>
           )}
@@ -386,28 +408,31 @@ const AdminPage = () => {
             </thead>
             <tbody>
               {users.map((user) => (
-                <tr key={user.id}
-                    className="border-b hover:bg-[#f5f0e6] transition">
+                <tr key={user.id} className="border-b hover:bg-[#f5f0e6] transition">
                   <td className="py-3 px-4 font-medium">{user.username}</td>
                   <td className="py-3 px-4">{user.email}</td>
                   <td className="py-3 px-4">{renderStatus(userStatuses[user.id])}</td>
                   <td className="py-3 px-4 space-x-2">
-                    <button onClick={() => handleToggleApproval(user.id)}
-                            disabled={userStatuses[user.id] === 'removed'}
-                            className={`px-4 py-2 rounded-md text-white transition ${
-                              userStatuses[user.id] === 'approved'
-                                ? 'bg-[#8b5e3c] hover:bg-[#a97458]'
-                                : 'bg-[#8b5e3c] hover:bg-[#a97458]'
-                            } ${userStatuses[user.id] === 'removed' ? 'opacity-50 cursor-not-allowed' : ''}`}
-                            style={{ fontWeight: '600' }}>
+                    <button
+                      onClick={() => handleToggleApproval(user.id)}
+                      disabled={userStatuses[user.id] === 'removed'}
+                      className={`px-4 py-2 rounded-md text-white transition ${
+                        userStatuses[user.id] === 'approved'
+                          ? 'bg-[#8b5e3c] hover:bg-[#a97458]'
+                          : 'bg-[#8b5e3c] hover:bg-[#a97458]'
+                      } ${userStatuses[user.id] === 'removed' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      style={{ fontWeight: '600' }}
+                    >
                       {userStatuses[user.id] === 'approved' ? 'Disapprove' : 'Approve'}
                     </button>
-                    <button onClick={() => handleDelete(user.id)}
-                            disabled={userStatuses[user.id] === 'removed'}
-                            className={`px-4 py-2 bg-[#5b3a29] text-white rounded-md hover:bg-[#8b5e3c] transition ${
-                              userStatuses[user.id] === 'removed' ? 'opacity-50 cursor-not-allowed' : ''
-                            }`}
-                            style={{ fontWeight: '600' }}>
+                    <button
+                      onClick={() => handleDelete(user.id)}
+                      disabled={userStatuses[user.id] === 'removed'}
+                      className={`px-4 py-2 bg-[#5b3a29] text-white rounded-md hover:bg-[#8b5e3c] transition ${
+                        userStatuses[user.id] === 'removed' ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
+                      style={{ fontWeight: '600' }}
+                    >
                       Remove
                     </button>
                   </td>
