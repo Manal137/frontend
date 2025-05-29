@@ -14,32 +14,32 @@
 // import LandingPage from './pages/LandingPage';
 
 // import PrivateRoute from './pages/PrivateRoute';
-// import AdminRoute from './pages/AdminRoute';
+// import AdminRoute from './pages/AdminRoute'; // ✅ Import
 
 // const router = createBrowserRouter([
-//   // 🔓 Public Routes
+//   // Public routes
 //   { path: '/', element: <HomePage /> },
 //   { path: '/login', element: <LoginPage /> },
 //   { path: '/register', element: <SignupPage /> },
 //   { path: '/admin-login', element: <AdminLoginPage /> },
 //   { path: '/admin-setup', element: <AdminSetupPage /> },
 
-//   // 🔐 Protected User Routes
+//   // Protected user routes
 //   {
 //     path: '/',
 //     element: <PrivateRoute />,
 //     children: [
-//       { path: 'dashboard', element: <DashboardPage /> },
-//       { path: 'landing', element: <LandingPage /> },
+//       { path: '/dashboard', element: <DashboardPage /> },
+//       { path: '/landing', element: <LandingPage /> },
 //     ],
 //   },
 
-//   // 🔐 Protected Admin Route
+//   // Protected admin route
 //   {
 //     path: '/',
 //     element: <AdminRoute />,
 //     children: [
-//       { path: 'admin', element: <AdminPage /> },
+//       { path: '/admin', element: <AdminPage /> },
 //     ],
 //   },
 // ]);
@@ -49,6 +49,7 @@
 // }
 
 // export default App;
+
 
 
 // src/App.js
@@ -66,7 +67,6 @@ import LandingPage from './pages/LandingPage';
 
 import PrivateRoute from './pages/PrivateRoute';
 import AdminRoute from './pages/AdminRoute';
-import { Outlet } from 'react-router-dom';
 
 const router = createBrowserRouter([
   // 🔓 Public Routes
@@ -81,14 +81,8 @@ const router = createBrowserRouter([
     path: '/',
     element: <PrivateRoute />,
     children: [
-      {
-        path: '',
-        element: <Outlet />,
-        children: [
-          { path: 'dashboard', element: <DashboardPage /> },
-          { path: 'landing', element: <LandingPage /> },
-        ],
-      },
+      { path: 'dashboard', element: <DashboardPage /> },
+      { path: 'landing', element: <LandingPage /> },
     ],
   },
 
@@ -97,11 +91,7 @@ const router = createBrowserRouter([
     path: '/',
     element: <AdminRoute />,
     children: [
-      {
-        path: '',
-        element: <Outlet />,
-        children: [{ path: 'admin', element: <AdminPage /> }],
-      },
+      { path: 'admin', element: <AdminPage /> },
     ],
   },
 ]);

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -6,7 +7,7 @@ const SignupPage = () => {
   const [form, setForm] = useState({ username: '', email: '', password: '' });
   const [error, setError] = useState('');
 
-  const API_BASE = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+  const API_BASE = process.env.REACT_APP_API_BASE_URL;
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -17,17 +18,11 @@ const SignupPage = () => {
     setError('');
 
     try {
-      const res = await fetch(`${API_BASE}/api/auth/register`, {
+      const res = await fetch(`${API_BASE}/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
       });
-
-      const contentType = res.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        const text = await res.text();
-        throw new Error(`Invalid server response: ${text}`);
-      }
 
       const data = await res.json();
 
@@ -159,69 +154,3 @@ const SignupPage = () => {
 };
 
 export default SignupPage;
-
-
-// import React, { useState } from 'react';
-// import { useNavigate } from 'react-router-dom';
-
-// const SignupPage = () => {
-//   const navigate = useNavigate();
-//   const [form, setForm] = useState({ username: '', email: '', password: '' });
-//   const [error, setError] = useState('');
-
-//   const API_BASE = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
-
-
-//   const handleChange = (e) => {
-//     setForm({ ...form, [e.target.name]: e.target.value });
-//   };
-
-//   const handleSubmit = async (e) => {
-//     e.preventDefault();
-//     setError('');
-
-//     try {
-//       const res = await fetch(`${API_BASE}/api/auth/register`, {
-//         method: 'POST',
-//         headers: { 'Content-Type': 'application/json' },
-//         body: JSON.stringify(form),
-//       });
-
-//       const contentType = res.headers.get('content-type');
-//       if (!contentType || !contentType.includes('application/json')) {
-//         const text = await res.text();
-//         throw new Error(`Invalid server response: ${text}`);
-//       }
-
-//       const data = await res.json();
-
-//       if (!res.ok) {
-//         throw new Error(data.error || 'Registration failed');
-//       }
-
-//       console.log('✅ Registered:', data);
-//       navigate('/login');
-//     } catch (err) {
-//       console.error('❌ Register error:', err);
-//       setError(err.message);
-//     }
-//   };
-
-//   return (
-//     <div className="min-h-screen flex items-center justify-center px-4" style={{ background: 'linear-gradient(135deg, #f5f0e6, #8b5e3c)' }}>
-//       <div className="w-full max-w-md rounded-2xl p-8 shadow-lg" style={{ backgroundColor: '#f3e9dc', border: '1px solid #a97458' }}>
-//         <h2 className="text-3xl font-bold text-center mb-6" style={{ color: '#5b3a29' }}>Create an Account</h2>
-//         <form onSubmit={handleSubmit} className="space-y-4">
-//           <input type="text" name="username" value={form.username} onChange={handleChange} placeholder="Username" required className="w-full px-4 py-2 border rounded" />
-//           <input type="email" name="email" value={form.email} onChange={handleChange} placeholder="Email" required className="w-full px-4 py-2 border rounded" />
-//           <input type="password" name="password" value={form.password} onChange={handleChange} placeholder="Password" required className="w-full px-4 py-2 border rounded" />
-//           {error && <p className="text-sm text-red-600 text-center">{error}</p>}
-//           <button type="submit" className="w-full py-2 bg-brown-700 text-white rounded hover:bg-brown-600">Register</button>
-//         </form>
-//         <p className="text-sm text-center mt-4">Already have an account? <button onClick={() => navigate('/login')} className="text-brown-600 underline">Login here</button></p>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default SignupPage;

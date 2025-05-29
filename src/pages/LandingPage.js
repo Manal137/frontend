@@ -26,7 +26,7 @@ const LandingPage = () => {
       </button>
 
       <h1 className="text-5xl font-bold text-gray-900 mb-4">
-       Welcome, {user?.username || 'User'}!
+        Welcome, {user?.name || 'User'}!
       </h1>
 
       <p className="text-xl text-gray-800 mb-6">
