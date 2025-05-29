@@ -1,3 +1,5 @@
+
+
 // import React, { useState } from 'react';
 // import { useNavigate } from 'react-router-dom';
 
@@ -7,14 +9,14 @@
 //   const [password, setPassword] = useState('');
 //   const [error, setError] = useState(null);
 
-//   const API_BASE = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api/auth';
-
+//   const API_BASE = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
 
 //   const handleLogin = async (e) => {
 //     e.preventDefault();
+//     setError(null); // clear previous errors
 
 //     try {
-//       const response = await fetch(`${API_BASE}/login`, {
+//       const response = await fetch(`${API_BASE}/api/auth/login`, {
 //         method: 'POST',
 //         headers: { 'Content-Type': 'application/json' },
 //         body: JSON.stringify({ email, password }),
@@ -25,11 +27,12 @@
 //       if (response.ok) {
 //         localStorage.setItem('token', data.token);
 //         localStorage.setItem('user', JSON.stringify(data.user));
-//         navigate('/landing'); // redirect to user landing
+//         navigate('/landing');
 //       } else {
 //         setError(data.error || 'Login failed. Please try again.');
 //       }
 //     } catch (err) {
+//       console.error('Login error:', err);
 //       setError('Server error. Please try again later.');
 //     }
 //   };
@@ -60,6 +63,7 @@
 //         <form onSubmit={handleLogin}>
 //           <input
 //             type="email"
+//             autoComplete="email"
 //             placeholder="Email"
 //             className="w-full mb-4 px-4 py-2 rounded focus:outline-none"
 //             style={{
@@ -73,6 +77,7 @@
 //           />
 //           <input
 //             type="password"
+//             autoComplete="current-password"
 //             placeholder="Password"
 //             className="w-full mb-6 px-4 py-2 rounded focus:outline-none"
 //             style={{
@@ -113,7 +118,6 @@
 // };
 
 // export default LoginPage;
-
 
 
 import React, { useState } from 'react';
@@ -220,6 +224,21 @@ const LoginPage = () => {
         </form>
 
         <p className="text-sm text-center mt-4" style={{ color: '#5b3a29' }}>
+          <span
+            onClick={() => navigate('/forgot-password')}
+            style={{
+              color: '#a97458',
+              cursor: 'pointer',
+              textDecoration: 'underline',
+              display: 'inline-block',
+              marginBottom: '6px',
+            }}
+          >
+            Forgot Password?
+          </span>
+        </p>
+
+        <p className="text-sm text-center" style={{ color: '#5b3a29' }}>
           Don't have an account?{' '}
           <span
             onClick={() => navigate('/register')}
